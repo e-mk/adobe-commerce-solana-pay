@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment" sortOrder="1000" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+            <group id="solanapay" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                <label>SolanaPay</label>
+                <field id="active" type="select" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" type="text" sortOrder="20" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                    <label>Title</label>
+                </field>
+                <field id="solana_public_key" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Solana Merchant Wallet</label>
+                    <comment>Public key of Merchant Wallet</comment>
+                </field>
+                <field id="mode" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mode</label>
+                    <source_model>ArmMage\SolanaPay\Model\Config\Source\Mode</source_model>
+                 
+                </field>
+               <field id="rpcmainnet" translate="label" type="text" sortOrder="51" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Rpc MainNet Url</label>
+                     <comment>Default RPC for mainnet https://api.mainnet-beta.solana.com/ (leave  empty for default) </comment>
+                    <depends>
+                        <field id="payment/solanapay/mode">mainnet-beta</field>
+                    </depends> 
+                </field>
+                   <field id="rpcapikey" translate="label" type="text" sortOrder="52" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>RPC Account APi Key</label>
+                     <validate>required-entry</validate>
+                    <comment>Register Your RPC account and put here your API key  </comment>
+                    <depends>
+                        <field id="payment/solanapay/mode">mainnet-beta</field>
+                    </depends>
+                </field>
+
+                <field id="order_status" type="select" sortOrder="60" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                    <label>New Order Status</label>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\Newprocessing</source_model>
+                </field>
+                <field id="allowspecific" type="allowspecific" sortOrder="70" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                    <label>Payment from Applicable Countries</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                </field>
+                <field id="specificcountry" type="multiselect" sortOrder="80" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                    <label>Payment from Applicable Countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+                <field id="sort_order" type="text" sortOrder="90" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                    <label>Sort Order</label>
+                </field>
+            </group>
+
+
+        </section>
+    </system>
+</config>

@@ -1,0 +1,21 @@
+{
+    "name": "armmage/module-solanapay",
+    "version":"1.0.0",
+    "type": "magento2-module",
+    "description": "SolanaPay USDC payment integration for Adobe commerce",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Artashes Baghdasaryan",
+            "email": "artashes@armmage.com"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "ArmMage\\SolanaPay\\": ""
+        }
+    }
+}
