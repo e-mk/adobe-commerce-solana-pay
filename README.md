@@ -31,7 +31,7 @@
 
 Link to adobe commerce marketplace https://commercemarketplace.adobe.com/armmage-module-solanapay.html
 
- -  `composer require armmage/module-solanapay``
+ -  `composer require armmage/module-solanapay`
  - `php bin/magento module:enable ArmMage_SolanaPay`
  - `php bin/magento setup:upgrade`
  -  cd [root_magento2]/app/code/ArmMage/SolanaPay/view/frontend/web/js
