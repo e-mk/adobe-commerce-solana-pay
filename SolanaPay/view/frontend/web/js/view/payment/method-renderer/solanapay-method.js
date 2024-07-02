@@ -3,6 +3,7 @@ define(
         'jquery',
         'Magento_Checkout/js/view/payment/default',
         'ArmMage_SolanaPay/js/solana/src/processPayment',
+        'ArmMage_SolanaPay/js/solana/src/processPaymentSolana',
         'Magento_Checkout/js/model/totals',
         'mage/url',
         'Magento_Checkout/js/model/quote',
@@ -32,7 +33,7 @@ define(
 
                 return this;
             },
-            
+
             connectWallet: function () {
                 var self = this;
                 if (typeof window.solana !== 'undefined') {
@@ -48,11 +49,48 @@ define(
                     console.error('Web3 library not found.');
                 }
             },
+            connectWalletSolana: function () {
+                var self = this;
+                if (typeof window.solana !== 'undefined') {
+                    window.solana.connect()
+                        .then(async function (wallet) {
+                            if (totals.totals()) {
+                                var grandTotal = parseFloat(totals.totals()['grand_total']);
+                                self.connectedWalletAddress(wallet.publicKey.toString());
+                                self.connectedWallet(wallet);
+
+                                const provider = self.getProvider();
+
+                                if (provider.publicKey) {
+
+                                    const sender = new solanaWeb3.PublicKey(wallet.publicKey.toString());
+                                    const merchant = new solanaWeb3.PublicKey(self.getPublicKey());
+                                    let signature = await processPayment.processPayment(provider, sender, merchant, grandTotal);
+                                    if (signature) {
+                                        self.signature = signature;
+                                        self.toWalletPublicKey = wallet.publicKey.toString();
+                                        $.cookie('solana_input_signature', self.signature);
+                                        $.cookie('solana_input_from_wallet_public_key', self.toWalletPublicKey);
+                                        $('.action.primary.checkout.solanapay').click();
+
+                                    } else {
+                                        $('.solanapay-method .message.error.message-error span').text('Order wasn\'t placed.');
+                                        $('.solanapay-method .message.error.message-error').css('visibility', 'visible');
+                                    }
+                                }
+                            }
+                        }).catch(function (error) {
+                            console.error('Web3 wallet connection error:', error);
+                        });
+                } else {
+                    console.error('Web3 library not found.');
+                }
+            },
 
             onUsdcAccountChange: async function () {
                 var self = this;
                 var selectedAccount = this.selectedUsdcAccount();
-                
+
                 if (selectedAccount) {
                     this.isPlaceOrderActionAllowed(true);
                     const provider = self.getProvider();
@@ -63,13 +101,13 @@ define(
                             if (provider.publicKey) {
                                 const senderPubkeyString = provider.publicKey.toString();
                                 const sender = new solanaWeb3.PublicKey(senderPubkeyString);
-                                const merchant = new solanaWeb3.PublicKey(self.getPublicKey()); 
-                                
+                                const merchant = new solanaWeb3.PublicKey(self.getPublicKey());
+
                                 try {
-                                    let signature = await processPayment.processPayment(provider, sender,selectedAccount, merchant, grandTotal);
+                                    let signature = await processPayment.processPayment(provider, sender, selectedAccount, merchant, grandTotal);
                                     if (signature) {
-                                      
-                                        $.cookie('solana_input_signature', signature.signature);
+
+                                        $.cookie('solana_input_signature', signature);
                                         $.cookie('solana_input_from_wallet_public_key', senderPubkeyString);
                                         // Trigger place order
                                         $('.action.primary.checkout.solanapay').click();
@@ -86,7 +124,7 @@ define(
                     }
                 }
             },
-            
+
             getProvider: function () {
                 if ('phantom' in window) {
                     const provider = window.phantom?.solana;
@@ -101,7 +139,7 @@ define(
 
             fetchUsdcAccounts: async function (publicKey) {
                 var self = this;
-                var connection =  await processPayment.establishConnection(self.getMode());
+                var connection = await processPayment.establishConnection(self.getMode());
 
                 // Assuming findUsdcAccount is modified to return an array of accounts
                 await processPayment.findUsdcAccount(new solanaWeb3.PublicKey(publicKey), connection).then(function (accounts) {
@@ -109,19 +147,19 @@ define(
                         messageList.addErrorMessage({ message: $t('No USDC accounts found.') });
                     }
 
-                        var formattedAccounts = accounts.map(function (account) {
-                                return {
-                                    formattedAddress: self.truncateAddress(account.mintAddress), // For display
-                                    mintAddress: account.mintAddress, // Actual value
-                                    balance: account.balance
-                                };
-                            });
-                     self.usdcAccounts(formattedAccounts);
+                    var formattedAccounts = accounts.map(function (account) {
+                        return {
+                            formattedAddress: self.truncateAddress(account.mintAddress), // For display
+                            mintAddress: account.mintAddress, // Actual value
+                            balance: account.balance
+                        };
+                    });
+                    self.usdcAccounts(formattedAccounts);
                     if (accounts.length === 1) {
                         self.selectedUsdcAccount(accounts[0]);
                         self.onUsdcAccountChange();
                     }
-                   
+
                 }).catch(function (error) {
                     console.error('Error fetching USDC accounts:', error);
                     messageList.addErrorMessage({ message: $t('Error fetching USDC accounts.') });
